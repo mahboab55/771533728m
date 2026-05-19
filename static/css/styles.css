@@ -1,0 +1,55 @@
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --light-bg: #f8f9fa;
+    --card-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+* { box-sizing: border-box; }
+body { font-family: 'Cairo', sans-serif; background-color: #f4f7f6; margin: 0; color: #333; }
+
+.card { background: white; border-radius: 15px; box-shadow: var(--card-shadow); padding: 2rem; margin-bottom: 2rem; }
+.btn-primary { background-color: var(--primary-color); border: none; color: white; cursor: pointer; transition: 0.3s; border-radius: 8px; }
+.btn-primary:hover { background-color: #0056b3; }
+.btn-secondary { background-color: var(--secondary-color); border: none; color: white; cursor: pointer; border-radius: 8px; }
+
+.table-responsive { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.table th, .table td { padding: 1rem; text-align: right; border-bottom: 1px solid #eee; }
+.table th { background-color: #f8f9fa; color: #666; font-weight: bold; }
+
+.badge { padding: 0.4rem 0.8rem; border-radius: 50px; font-size: 0.85rem; font-weight: bold; }
+.badge-active { background-color: #e8f5e9; color: #2e7d32; }
+.badge-cancelled { background-color: #ffebee; color: #c62828; }
+
+.action-buttons { display: flex; gap: 0.5rem; }
+.btn-edit { color: var(--primary-color); background: #e3f2fd; padding: 0.5rem; border-radius: 6px; }
+.btn-delete { color: var(--danger-color); background: #ffebee; padding: 0.5rem; border-radius: 6px; }
+.btn-cancel { color: var(--warning-color); background: #fff8e1; padding: 0.5rem; border-radius: 6px; }
+
+/* Form Styles */
+.form-group { margin-bottom: 1.5rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: #555; }
+.form-control { width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-family: 'Cairo', sans-serif; font-size: 1rem; }
+.form-control:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
+
+.step-container { display: none; }
+.step-container.active { display: block; animation: fadeIn 0.4s; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.progress-bar { display: flex; justify-content: space-between; margin-bottom: 3rem; position: relative; padding: 0 1rem; }
+.progress-bar::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: #ddd; z-index: 1; transform: translateY(-50%); }
+.step { width: 40px; height: 40px; background: white; border: 2px solid #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2; font-weight: bold; color: #999; transition: 0.3s; }
+.step.active { border-color: var(--primary-color); color: var(--primary-color); box-shadow: 0 0 0 5px rgba(0,123,255,0.1); }
+.step.completed { background: var(--primary-color); border-color: var(--primary-color); color: white; }
+
+/* PDF View Styles (Simulated for result page) */
+.pdf-preview { background: white; padding: 3rem; border: 1px solid #ddd; box-shadow: 0 0 20px rgba(0,0,0,0.1); max-width: 800px; margin: 2rem auto; position: relative; }
+.pdf-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3rem; border-bottom: 2px solid #007b5e; padding-bottom: 1rem; }
+.pdf-logo { height: 100px; }
+.pdf-content { line-height: 2; font-size: 1.1rem; }
+.pdf-footer { margin-top: 4rem; text-align: center; color: #666; font-size: 0.9rem; }

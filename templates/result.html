@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عرض التقرير الطبي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        @media print {
+            .no-print { display: none; }
+            body { background: white; padding: 0; margin: 0; }
+            .pdf-preview { 
+                box-shadow: none; 
+                border: none; 
+                width: 210mm; 
+                height: 297mm; 
+                margin: 0 auto; 
+                padding: 15mm;
+                box-sizing: border-box;
+            }
+            @page { size: A4; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="max-width: 800px; margin: 1rem auto; display: flex; gap: 1rem;">
+        <button onclick="window.print()" class="btn-primary" style="flex: 1; padding: 1rem;">طباعة التقرير (PDF)</button>
+        <a href="{{ url_for('index') }}" class="btn-secondary" style="flex: 1; padding: 1rem; text-decoration: none; text-align: center;">العودة للوحة التحكم</a>
+    </div>
+
+    <div class="pdf-preview">
+        <div class="pdf-header">
+            <div>
+                <h1 style="color: #007b5e; margin: 0;">تقرير إجازة مرضية</h1>
+                <p style="color: #666;">رقم التقرير: {{ leave.report_id }}</p>
+            </div>
+            <img src="{{ url_for('static', filename=leave.logo_path) }}" class="pdf-logo">
+        </div>
+
+        <div class="pdf-content">
+            <p><strong>تشهد المنشأة الطبية:</strong> {{ leave.medical_entity }}</p>
+            <p>بأن المريض/ة <strong>{{ leave.patient_name }}</strong>، حامل الهوية رقم ({{ leave.id_number }})، قد تم الكشف عليه من قبل الدكتور <strong>{{ leave.doctor_name }}</strong> (تخصص {{ leave.specialty }}).</p>
+            
+            <p>وبناءً على حالته الصحية، فقد تقرر منحه إجازة مرضية مدتها <strong>{{ leave.duration }} أيام</strong>.</p>
+            
+            <table style="width: 100%; margin: 2rem 0; border-collapse: collapse;">
+                <tr style="background: #f0f7f5;">
+                    <th style="border: 1px solid #007b5e; padding: 1rem;">تاريخ البداية (هجري)</th>
+                    <th style="border: 1px solid #007b5e; padding: 1rem;">تاريخ البداية (ميلادي)</th>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #007b5e; padding: 1rem; text-align: center;">{{ leave.start_date_h }}</td>
+                    <td style="border: 1px solid #007b5e; padding: 1rem; text-align: center;">{{ leave.start_date_g }}</td>
+                </tr>
+            </table>
+
+            <p><strong>حالة التقرير:</strong> 
+                <span style="color: {{ '#2e7d32' if leave.status == 'active' else '#c62828' }}">
+                    {{ 'معتمد ونشط' if leave.status == 'active' else 'ملغي وغير معتمد' }}
+                </span>
+            </p>
+        </div>
+
+        <div class="pdf-footer">
+            <p>هذا التقرير تم إصداره إلكترونياً ولا يحتاج لختم أو توقيع.</p>
+            <p>تاريخ الإصدار: {{ leave.created_at.strftime('%Y-%m-%d') }}</p>
+        </div>
+    </div>
+</body>
+</html>

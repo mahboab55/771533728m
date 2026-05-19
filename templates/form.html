@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'تعديل' if leave else 'إضافة' }} إجازة مرضية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="dashboard-container" style="max-width: 800px;">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="margin: 0;">{{ 'تعديل تقرير' if leave else 'إصدار تقرير جديد' }}</h2>
+                <a href="{{ url_for('index') }}" class="btn-secondary" style="text-decoration: none; padding: 0.5rem 1rem;">رجوع</a>
+            </div>
+
+            <div class="progress-bar">
+                <div class="step active" id="step1-indicator">1</div>
+                <div class="step" id="step2-indicator">2</div>
+                <div class="step" id="step3-indicator">3</div>
+                <div class="step" id="step4-indicator">4</div>
+            </div>
+
+            <form id="multiStepForm" method="POST">
+                <!-- Step 1: Patient Info -->
+                <div class="step-container active" id="step1">
+                    <h3>البيانات الشخصية</h3>
+                    <div class="form-group">
+                        <label>اسم المريض رباعي</label>
+                        <input type="text" name="patient_name" class="form-control" value="{{ leave.patient_name if leave else '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>رقم الهوية / الإقامة</label>
+                        <input type="text" name="id_number" class="form-control" value="{{ leave.id_number if leave else '' }}" required>
+                    </div>
+                    <button type="button" onclick="nextStep(2)" class="btn-primary" style="width: 100%; padding: 1rem;">التالي</button>
+                </div>
+
+                <!-- Step 2: Medical Info -->
+                <div class="step-container" id="step2">
+                    <h3>بيانات المنشأة والتشخيص</h3>
+                    <div class="form-group">
+                        <label>المنشأة الطبية</label>
+                        <input type="text" name="medical_entity" class="form-control" value="{{ leave.medical_entity if leave else '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>اسم الطبيب المعالج</label>
+                        <input type="text" name="doctor_name" class="form-control" value="{{ leave.doctor_name if leave else '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>التخصص</label>
+                        <input type="text" name="specialty" class="form-control" value="{{ leave.specialty if leave else '' }}" required>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="button" onclick="prevStep(1)" class="btn-secondary" style="flex: 1; padding: 1rem;">السابق</button>
+                        <button type="button" onclick="nextStep(3)" class="btn-primary" style="flex: 1; padding: 1rem;">التالي</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Dates -->
+                <div class="step-container" id="step3">
+                    <h3>مدة الإجازة والتواريخ</h3>
+                    <div class="form-group">
+                        <label>تاريخ بداية الإجازة (هجري)</label>
+                        <input type="text" id="start_date_h" name="start_date_h" class="form-control" placeholder="YYYY-MM-DD" value="{{ leave.start_date_h if leave else '' }}" onchange="syncDate('h_to_g')">
+                    </div>
+                    <div class="form-group">
+                        <label>تاريخ بداية الإجازة (ميلادي)</label>
+                        <input type="date" id="start_date_g" name="start_date_g" class="form-control" value="{{ leave.start_date_g if leave else '' }}" onchange="syncDate('g_to_h')">
+                    </div>
+                    <div class="form-group">
+                        <label>مدة الإجازة (بالأيام)</label>
+                        <input type="number" name="duration" class="form-control" value="{{ leave.duration if leave else '' }}" required>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="button" onclick="prevStep(2)" class="btn-secondary" style="flex: 1; padding: 1rem;">السابق</button>
+                        <button type="button" onclick="nextStep(4)" class="btn-primary" style="flex: 1; padding: 1rem;">التالي</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Review & Logo -->
+                <div class="step-container" id="step4">
+                    <h3>مراجعة نهائية</h3>
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                        <p><strong>الشعار المستخدم:</strong> افتراضي (وزارة الصحة)</p>
+                        <img src="{{ url_for('static', filename='uploads/default_logo.png') }}" height="60">
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="button" onclick="prevStep(3)" class="btn-secondary" style="flex: 1; padding: 1rem;">السابق</button>
+                        <button type="submit" class="btn-primary" style="flex: 1; padding: 1rem;">حفظ وإصدار التقرير</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function nextStep(step) {
+            document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+            updateIndicators(step);
+        }
+        function prevStep(step) {
+            document.querySelectorAll('.step-container').forEach(el => el.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+            updateIndicators(step);
+        }
+        function updateIndicators(step) {
+            document.querySelectorAll('.step').forEach((el, idx) => {
+                if (idx + 1 < step) el.classList.add('completed');
+                else el.classList.remove('completed');
+                if (idx + 1 === step) el.classList.add('active');
+                else el.classList.remove('active');
+            });
+        }
+
+        async function syncDate(direction) {
+            const hInput = document.getElementById('start_date_h');
+            const gInput = document.getElementById('start_date_g');
+            const dateVal = direction === 'h_to_g' ? hInput.value : gInput.value;
+            
+            if (!dateVal) return;
+
+            const response = await fetch('/api/convert-date', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date: dateVal, direction: direction === 'h_to_g' ? 'hijri_to_gregorian' : 'gregorian_to_hijri' })
+            });
+            const data = await response.json();
+            if (data.success && data.result) {
+                if (direction === 'h_to_g') gInput.value = data.result;
+                else hInput.value = data.result;
+            }
+        }
+    </script>
+</body>
+</html>

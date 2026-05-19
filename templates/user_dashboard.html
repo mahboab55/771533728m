@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة المستخدم - نظام الإجازات المرضية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <header class="nav-header" style="background: white; padding: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <img src="{{ url_for('static', filename='uploads/default_logo.png') }}" alt="Logo" height="40">
+            <strong>نظام الإجازات المرضية - بوابة الموظف</strong>
+        </div>
+        <div>
+            <span>مرحباً، {{ current_user.username }}</span> | 
+            <a href="{{ url_for('logout') }}" style="color: #d9534f; text-decoration: none;">تسجيل الخروج</a>
+        </div>
+    </header>
+
+    <div class="dashboard-container" style="max-width: 1000px; margin: 2rem auto;">
+        <div style="margin-bottom: 2rem;">
+            <a href="{{ url_for('form') }}" class="btn-primary" style="text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: bold;"><i class="fas fa-plus"></i> إضافة إجازة جديدة</a>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-top: 0;">سجلاتي السابقة</h2>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>رقم التقرير</th>
+                            <th>المريض</th>
+                            <th>البداية (هـ)</th>
+                            <th>المدة</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in leaves %}
+                        <tr>
+                            <td>{{ leave.report_id }}</td>
+                            <td>{{ leave.patient_name }}</td>
+                            <td>{{ leave.start_date_h }}</td>
+                            <td>{{ leave.duration }} أيام</td>
+                            <td>
+                                <span class="badge {{ 'badge-active' if leave.status == 'active' else 'badge-cancelled' }}">
+                                    {{ 'نشط' if leave.status == 'active' else 'ملغي' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{{ url_for('form', edit=leave.report_id) }}" class="btn-edit" title="تعديل"><i class="fas fa-edit"></i></a>
+                                    {% if leave.status == 'active' %}
+                                    <a href="{{ url_for('cancel_leave', report_id=leave.report_id) }}" class="btn-cancel" title="إلغاء" onclick="return confirm('هل أنت متأكد من إلغاء هذا التقرير؟')"><i class="fas fa-ban"></i></a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
