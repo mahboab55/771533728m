@@ -35,6 +35,10 @@
                         <label>رقم الهوية / الإقامة</label>
                         <input type="text" name="id_number" class="form-control" value="{{ leave.id_number if leave else '' }}" required>
                     </div>
+                    <div class="form-group">
+                        <label>رقم هاتف المريض (لإرسال SMS)</label>
+                        <input type="tel" name="patient_phone" class="form-control" value="{{ leave.patient_phone if leave else '' }}" placeholder="05xxxxxxxx">
+                    </div>
                     <button type="button" onclick="nextStep(2)" class="btn-primary" style="width: 100%; padding: 1rem;">التالي</button>
                 </div>
 

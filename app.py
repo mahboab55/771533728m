@@ -31,6 +31,7 @@ class SickLeave(db.Model):
     report_id = db.Column(db.String(20), unique=True)
     patient_name = db.Column(db.String(100))
     id_number = db.Column(db.String(20))
+    patient_phone = db.Column(db.String(20))
     medical_entity = db.Column(db.String(100))
     doctor_name = db.Column(db.String(100))
     specialty = db.Column(db.String(100))
@@ -41,6 +42,7 @@ class SickLeave(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     logo_path = db.Column(db.String(200), default='uploads/default_logo.png')
+    sms_status = db.Column(db.String(100))
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -68,6 +70,10 @@ def convert_g_to_h(g_date_str):
 
 # Routes
 @app.route('/')
+def public_index():
+    return render_template('verify.html')
+
+@app.route('/dashboard')
 @login_required
 def index():
     if current_user.role == 'admin':
@@ -141,24 +147,26 @@ def form():
             return redirect(url_for('index'))
 
     if request.method == 'POST':
-        # Logic for saving/updating
         data = request.form
+        p_phone = data.get('patient_phone')
+        
         if edit_id:
-            # Update
             leave.patient_name = data.get('patient_name')
             leave.id_number = data.get('id_number')
+            leave.patient_phone = p_phone
             leave.medical_entity = data.get('medical_entity')
             leave.doctor_name = data.get('doctor_name')
             leave.specialty = data.get('specialty')
             leave.start_date_g = data.get('start_date_g')
             leave.start_date_h = data.get('start_date_h')
             leave.duration = data.get('duration')
+            target_leave = leave
         else:
-            # Create
-            new_leave = SickLeave(
+            target_leave = SickLeave(
                 report_id=generate_report_id(),
                 patient_name=data.get('patient_name'),
                 id_number=data.get('id_number'),
+                patient_phone=p_phone,
                 medical_entity=data.get('medical_entity'),
                 doctor_name=data.get('doctor_name'),
                 specialty=data.get('specialty'),
@@ -167,10 +175,22 @@ def form():
                 duration=data.get('duration'),
                 user_id=current_user.id
             )
-            db.session.add(new_leave)
+            db.session.add(target_leave)
         
         db.session.commit()
-        return redirect(url_for('view_result', report_id=leave.report_id if edit_id else new_leave.report_id))
+
+        # إرسال SMS
+        if p_phone:
+            try:
+                from utils.sms_sender import send_sms
+                msg = f"خطاك السوء {target_leave.patient_name} تم إصدار إجازة مرضية ليوم {target_leave.duration} برقم {target_leave.report_id} ويمكنك الاطلاع عليها عبر تطبيق صحتي دمتم بصحة."
+                res = send_sms(p_phone, msg)
+                target_leave.sms_status = "تم الإرسال" if res['success'] else f"فشل: {res.get('error')}"
+                db.session.commit()
+            except Exception as e:
+                print(f"SMS Error: {e}")
+
+        return redirect(url_for('view_result', report_id=target_leave.report_id))
 
     return render_template('form.html', leave=leave)
 
@@ -213,6 +233,25 @@ def cancel_leave(report_id):
         leave.status = 'cancelled'
         db.session.commit()
     return redirect(url_for('index'))
+
+@app.route('/api/verify', methods=['POST'])
+def api_verify():
+    report_id = request.json.get('report_id')
+    id_number = request.json.get('id_number')
+    leave = SickLeave.query.filter_by(report_id=report_id, id_number=id_number).first()
+    if leave:
+        return jsonify({
+            'success': True,
+            'data': {
+                'patient_name': leave.patient_name,
+                'medical_entity': leave.medical_entity,
+                'doctor_name': leave.doctor_name,
+                'start_date_h': leave.start_date_h,
+                'duration': leave.duration,
+                'status': leave.status
+            }
+        })
+    return jsonify({'success': False, 'message': 'لم يتم العثور على الإجازة أو البيانات غير متطابقة'})
 
 if __name__ == '__main__':
     with app.app_context():

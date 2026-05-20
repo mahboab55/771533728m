@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة صحة - الاستعلام عن الإجازات المرضية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body { background-color: #f0f3f8; font-family: 'Cairo', sans-serif; }
+        .verify-container { max-width: 500px; margin: 50px auto; padding: 20px; }
+        .verify-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .logo-section { text-align: center; margin-bottom: 30px; }
+        .logo-section img { height: 50px; }
+        .form-title { text-align: center; color: #1a3a5f; margin-bottom: 25px; font-weight: 700; }
+        .result-box { margin-top: 25px; padding: 20px; border-radius: 10px; display: none; }
+        .result-success { background: #e6f4ea; border: 1px solid #34a853; color: #1e4620; }
+        .result-error { background: #fce8e6; border: 1px solid #ea4335; color: #a50e0e; }
+        .data-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="verify-container">
+        <div class="verify-card">
+            <div class="logo-section">
+                <img src="https://www.seha.sa/assets/MOH-logo-DYiHZCSg.svg" alt="وزارة الصحة">
+            </div>
+            <h2 class="form-title">الاستعلام عن إجازة مرضية</h2>
+            
+            <div class="form-group">
+                <label>رقم الخدمة (الإجازة)</label>
+                <input type="text" id="report_id" class="form-control" placeholder="مثال: PSL123456" required>
+            </div>
+            <div class="form-group">
+                <label>رقم الهوية / الإقامة</label>
+                <input type="text" id="id_number" class="form-control" placeholder="أدخل رقم الهوية" required>
+            </div>
+            
+            <button type="button" onclick="verifyLeave()" id="btn-verify" class="btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">استعلام</button>
+            
+            <div id="result" class="result-box"></div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="{{ url_for('login') }}" style="color: #666; text-decoration: none; font-size: 0.9rem;">تسجيل دخول الموظفين</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function verifyLeave() {
+            const reportId = document.getElementById('report_id').value;
+            const idNumber = document.getElementById('id_number').value;
+            const resultDiv = document.getElementById('result');
+            const btn = document.getElementById('btn-verify');
+
+            if(!reportId || !idNumber) {
+                alert('يرجى إدخال جميع البيانات');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'جاري التحقق...';
+            resultDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ report_id: reportId, id_number: idNumber })
+                });
+                const data = await response.json();
+
+                resultDiv.style.display = 'block';
+                if(data.success) {
+                    resultDiv.className = 'result-box result-success';
+                    const d = data.data;
+                    resultDiv.innerHTML = `
+                        <h4 style="margin-top:0">✅ تم التحقق من صحة الإجازة</h4>
+                        <div class="data-row"><span>اسم المريض:</span> <strong>${d.patient_name}</strong></div>
+                        <div class="data-row"><span>المنشأة:</span> <strong>${d.medical_entity}</strong></div>
+                        <div class="data-row"><span>التاريخ:</span> <strong>${d.start_date_h}</strong></div>
+                        <div class="data-row"><span>المدة:</span> <strong>${d.duration} يوم</strong></div>
+                        <div class="data-row"><span>الحالة:</span> <strong>${d.status === 'active' ? 'نشطة' : 'ملغاة'}</strong></div>
+                    `;
+                } else {
+                    resultDiv.className = 'result-box result-error';
+                    resultDiv.innerHTML = `❌ ${data.message}`;
+                }
+            } catch(e) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result-box result-error';
+                resultDiv.innerHTML = '❌ حدث خطأ في الاتصال بالخادم';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'استعلام';
+            }
+        }
+    </script>
+</body>
+</html>
