@@ -1,66 +1,121 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة صحة - الاستعلام عن الإجازات المرضية</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>صحة - الاستعلام عن الإجازات المرضية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f0f3f8; font-family: 'Cairo', sans-serif; }
-        .verify-container { max-width: 500px; margin: 50px auto; padding: 20px; }
-        .verify-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .logo-section { text-align: center; margin-bottom: 30px; }
-        .logo-section img { height: 50px; }
-        .form-title { text-align: center; color: #1a3a5f; margin-bottom: 25px; font-weight: 700; }
-        .result-box { margin-top: 25px; padding: 20px; border-radius: 10px; display: none; }
-        .result-success { background: #e6f4ea; border: 1px solid #34a853; color: #1e4620; }
-        .result-error { background: #fce8e6; border: 1px solid #ea4335; color: #a50e0e; }
-        .data-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dashed #ccc; padding-bottom: 5px; }
+        :root { --primary-color: #306DB5; --secondary-color: #007b5e; --bg-color: #f0f3f8; }
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; }
+        .header { background: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .header img { height: 45px; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 600; }
+        .main-container { max-width: 900px; margin: 40px auto; padding: 20px; }
+        .breadcrumb { font-size: 14px; color: #666; margin-bottom: 20px; }
+        .card { background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .heading { color: #1a3a5f; font-size: 28px; font-weight: 900; margin-bottom: 10px; }
+        .sub-heading { color: #666; margin-bottom: 30px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; }
+        .form-control { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; box-sizing: border-box; }
+        .btn-verify { background: var(--primary-color); color: white; border: none; padding: 15px 40px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 16px; width: 100%; margin-top: 10px; }
+        .result-container { margin-top: 30px; display: none; border-top: 2px solid #eee; padding-top: 30px; }
+        .result-card { border: 1px solid #e0e0e0; border-radius: 10px; padding: 25px; background: #fafafa; }
+        .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .status-badge { padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: 700; }
+        .status-active { background: #e6f4ea; color: #1e4620; }
+        .status-cancelled { background: #fce8e6; color: #a50e0e; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .info-item { margin-bottom: 10px; }
+        .info-label { font-size: 13px; color: #777; display: block; }
+        .info-value { font-size: 16px; font-weight: 700; color: #333; }
+        .footer { text-align: center; margin-top: 50px; padding: 30px; color: #888; font-size: 14px; }
     </style>
 </head>
 <body>
-    <div class="verify-container">
-        <div class="verify-card">
-            <div class="logo-section">
-                <img src="https://www.seha.sa/assets/MOH-logo-DYiHZCSg.svg" alt="وزارة الصحة">
-            </div>
-            <h2 class="form-title">الاستعلام عن إجازة مرضية</h2>
-            
-            <div class="form-group">
-                <label>رقم الخدمة (الإجازة)</label>
-                <input type="text" id="report_id" class="form-control" placeholder="مثال: PSL123456" required>
-            </div>
-            <div class="form-group">
-                <label>رقم الهوية / الإقامة</label>
-                <input type="text" id="id_number" class="form-control" placeholder="أدخل رقم الهوية" required>
-            </div>
-            
-            <button type="button" onclick="verifyLeave()" id="btn-verify" class="btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">استعلام</button>
-            
-            <div id="result" class="result-box"></div>
-            
-            <div style="text-align: center; margin-top: 30px;">
-                <a href="{{ url_for('login') }}" style="color: #666; text-decoration: none; font-size: 0.9rem;">تسجيل دخول الموظفين</a>
-            </div>
+    <div class="header">
+        <img src="https://www.seha.sa/assets/seha_logo-m9JsokyV.svg" alt="صحة">
+        <div class="nav-links">
+            <a href="#">الرئيسية</a>
+            <a href="#">الخدمات</a>
+            <a href="#" style="color: var(--primary-color)">الاستعلامات</a>
+            <a href="{{ url_for('login') }}">تسجيل الدخول</a>
         </div>
     </div>
 
+    <div class="main-container">
+        <div class="breadcrumb">الرئيسية / الاستعلامات / الإجازات المرضية</div>
+        <div class="card">
+            <h1 class="heading">الاستعلام عن إجازة مرضية</h1>
+            <p class="sub-heading">أدخل البيانات التالية للتحقق من صحة التقرير الطبي</p>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>رقم الخدمة (رقم الإجازة)</label>
+                    <input type="text" id="report_id" class="form-control" placeholder="مثال: PSL123456">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهوية / الإقامة</label>
+                    <input type="text" id="id_number" class="form-control" placeholder="أدخل رقم الهوية">
+                </div>
+            </div>
+            <button class="btn-verify" onclick="verify()">استعلام</button>
+
+            <div id="result" class="result-container">
+                <div class="result-card">
+                    <div class="result-header">
+                        <h3 style="margin:0">تفاصيل الإجازة المرضية</h3>
+                        <span id="res_status" class="status-badge"></span>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">اسم المريض</span>
+                            <span id="res_name" class="info-value"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">المنشأة الطبية</span>
+                            <span id="res_entity" class="info-value"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">تاريخ البداية</span>
+                            <span id="res_date" class="info-value"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">مدة الإجازة</span>
+                            <span id="res_duration" class="info-value"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">الطبيب المعالج</span>
+                            <span id="res_doctor" class="info-value"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="error_msg" style="display:none; color:#ea4335; text-align:center; margin-top:20px; font-weight:700;"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        منصة صحة معتمدة من قبل وزارة الصحة © 2026
+    </div>
+
     <script>
-        async function verifyLeave() {
+        async function verify() {
             const reportId = document.getElementById('report_id').value;
             const idNumber = document.getElementById('id_number').value;
             const resultDiv = document.getElementById('result');
-            const btn = document.getElementById('btn-verify');
+            const errorDiv = document.getElementById('error_msg');
 
             if(!reportId || !idNumber) {
                 alert('يرجى إدخال جميع البيانات');
                 return;
             }
 
-            btn.disabled = true;
-            btn.innerText = 'جاري التحقق...';
             resultDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
 
             try {
                 const response = await fetch('/api/verify', {
@@ -70,29 +125,26 @@
                 });
                 const data = await response.json();
 
-                resultDiv.style.display = 'block';
                 if(data.success) {
-                    resultDiv.className = 'result-box result-success';
                     const d = data.data;
-                    resultDiv.innerHTML = `
-                        <h4 style="margin-top:0">✅ تم التحقق من صحة الإجازة</h4>
-                        <div class="data-row"><span>اسم المريض:</span> <strong>${d.patient_name}</strong></div>
-                        <div class="data-row"><span>المنشأة:</span> <strong>${d.medical_entity}</strong></div>
-                        <div class="data-row"><span>التاريخ:</span> <strong>${d.start_date_h}</strong></div>
-                        <div class="data-row"><span>المدة:</span> <strong>${d.duration} يوم</strong></div>
-                        <div class="data-row"><span>الحالة:</span> <strong>${d.status === 'active' ? 'نشطة' : 'ملغاة'}</strong></div>
-                    `;
+                    document.getElementById('res_name').innerText = d.patient_name;
+                    document.getElementById('res_entity').innerText = d.medical_entity;
+                    document.getElementById('res_date').innerText = d.start_date_h;
+                    document.getElementById('res_duration').innerText = d.duration + ' أيام';
+                    document.getElementById('res_doctor').innerText = d.doctor_name;
+                    
+                    const statusBadge = document.getElementById('res_status');
+                    statusBadge.innerText = d.status === 'active' ? 'معتمد ونشط' : 'ملغي';
+                    statusBadge.className = 'status-badge ' + (d.status === 'active' ? 'status-active' : 'status-cancelled');
+                    
+                    resultDiv.style.display = 'block';
                 } else {
-                    resultDiv.className = 'result-box result-error';
-                    resultDiv.innerHTML = `❌ ${data.message}`;
+                    errorDiv.innerText = '❌ ' + data.message;
+                    errorDiv.style.display = 'block';
                 }
             } catch(e) {
-                resultDiv.style.display = 'block';
-                resultDiv.className = 'result-box result-error';
-                resultDiv.innerHTML = '❌ حدث خطأ في الاتصال بالخادم';
-            } finally {
-                btn.disabled = false;
-                btn.innerText = 'استعلام';
+                errorDiv.innerText = '❌ حدث خطأ في الاتصال بالخادم';
+                errorDiv.style.display = 'block';
             }
         }
     </script>
