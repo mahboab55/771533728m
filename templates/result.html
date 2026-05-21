@@ -31,9 +31,12 @@
 
     <div class="pdf-preview">
         <div class="pdf-header">
-            <div>
-                <h1 style="color: #007b5e; margin: 0;">تقرير إجازة مرضية</h1>
-                <p style="color: #666;">رقم التقرير: {{ leave.report_id }}</p>
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <img src="{{ url_for('static', filename='qrcodes/' + leave.report_id + '.png') }}" style="width: 100px; height: 100px; border: 1px solid #eee;">
+                <div>
+                    <h1 style="color: #007b5e; margin: 0;">تقرير إجازة مرضية</h1>
+                    <p style="color: #666;">رقم التقرير: {{ leave.report_id }}</p>
+                </div>
             </div>
             <img src="{{ url_for('static', filename=leave.logo_path) }}" class="pdf-logo">
         </div>

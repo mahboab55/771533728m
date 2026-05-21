@@ -103,6 +103,17 @@
     </div>
 
     <script>
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const reportId = urlParams.get('report_id');
+            const idNumber = urlParams.get('id_number');
+            if(reportId && idNumber) {
+                document.getElementById('report_id').value = reportId;
+                document.getElementById('id_number').value = idNumber;
+                verify();
+            }
+        }
+
         async function verify() {
             const reportId = document.getElementById('report_id').value;
             const idNumber = document.getElementById('id_number').value;

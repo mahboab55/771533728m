@@ -9,6 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from hijridate import Gregorian, Hijri
 from xhtml2pdf import pisa
 import io
+import qrcode
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key-123'
@@ -178,6 +179,17 @@ def form():
             db.session.add(target_leave)
         
         db.session.commit()
+
+        # توليد الباركود
+        qr_dir = os.path.join(app.static_folder, 'qrcodes')
+        os.makedirs(qr_dir, exist_ok=True)
+        qr_path = os.path.join(qr_dir, f"{target_leave.report_id}.png")
+        verify_url = request.host_url.rstrip('/') + url_for('public_index') + f"?report_id={target_leave.report_id}&id_number={target_leave.id_number}"
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(verify_url)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        img.save(qr_path)
 
         # إرسال SMS
         if p_phone:
