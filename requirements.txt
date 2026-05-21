@@ -4,3 +4,7 @@ Flask-Login==0.6.3
 hijridate==2.5.0
 xhtml2pdf==0.2.16
 twilio
+qrcode[pil]
+python-pptx
+gunicorn
+requests
